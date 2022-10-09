@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ingestion"
+version = "0.1.0"
+description = "Tool to ingest CSV data into a Data Warehouse"
+authors = ["Timo Mutas"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pyspark = "^3.3.0"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+pandas = "^1.5.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
