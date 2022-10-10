@@ -16,7 +16,11 @@ from ingestion.extract import (
     parse_json_data,
     flatten_structs,
 )
-
+from ingestion.transform import (
+    EMPTY_COLS,
+    remove_columns,
+    parse_message_field,
+)
 
 logger = logging.getLogger()
 
@@ -30,7 +34,11 @@ def extract_raw_data(spark: SparkSession, path: Union[str, Path]) -> DataFrame:
 
     return df
 
+def transform_data(df: DataFrame):
+    df = remove_columns(df, EMPTY_COLS)
+    df = parse_message_field(df)
 
+    return df
 
 def run(args):
     logger.info("Creating SparkSession")
@@ -38,7 +46,9 @@ def run(args):
 
     logger.info("Starting raw data processing")
     df = extract_raw_data(spark, args.input_data_path)
+    df = transform_data(df)
 
+    df.show(10)
 
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout, level=logging.INFO)
