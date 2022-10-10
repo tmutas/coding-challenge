@@ -2,6 +2,13 @@
 ## Introduction
 The task of the challenge is to ingest a CSV file of Kafka events, transform it and load it into a data warehouse.
 
+The approach is basically an ETL process, so 
+- Extracting the raw data and making it columnar
+- Transforming the data, removing unwanted columns, and pulling out additional columns
+- Loading the data into the data warehouse, by modeling dimensions and facts.  
+
+Please bear in mind that I don't have a greate overview yet of all the technologies and tools out there, in order to decide which approach would be the optimal one for this ETL task.
+
 ## Getting Started
 The project is written in Python, as it's versatile in the variety of tools it can interact with and it's the language I'm most proficient in. 
 
@@ -41,4 +48,3 @@ I decided to do it explicitely on finding a "test message" string, but depending
 
 However, for an informed decision, more domain knowledge about the data generating system is required.
 For example, different types of messages might be expected. Then there could be additional fields extracted, with others being allowed to be null, or the data can be split by a TBD "message type", and modeled with separate dimensions for the different message types.
-
