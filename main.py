@@ -11,26 +11,25 @@ from typing import Union
 
 from pyspark.sql import DataFrame, SparkSession
 
-from ingestion.loading import (
+from ingestion.extract import (
     load_raw_data,
     parse_json_data,
     flatten_structs,
-    remove_columns,
 )
 
 
 logger = logging.getLogger()
 
 
-def process_raw_data(spark: SparkSession, path: Union[str, Path]) -> DataFrame:
+def extract_raw_data(spark: SparkSession, path: Union[str, Path]) -> DataFrame:
     df = load_raw_data(spark, path)
     logger.info("Parsing JSON data")
     df = parse_json_data(df)
     logger.info("Flattening data")
     df = flatten_structs(df)
-    df = remove_columns(df)
 
     return df
+
 
 
 def run(args):
@@ -38,7 +37,7 @@ def run(args):
     spark = SparkSession.builder.getOrCreate()
 
     logger.info("Starting raw data processing")
-    df = process_raw_data(spark, args.input_data_path)
+    df = extract_raw_data(spark, args.input_data_path)
 
 
 if __name__ == "__main__":

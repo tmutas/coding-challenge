@@ -1,4 +1,4 @@
-"""Functions to handle loading and preparing raw data"""
+"""Functions to handle extracting and preparing raw data"""
 from pathlib import Path
 from typing import Union
 
@@ -67,20 +67,4 @@ def flatten_structs(df: DataFrame) -> DataFrame:
 
     # There was one more struct with a single field to unpack in the metadata
     df = df.withColumn("host", df.colRegex("key.host")).drop("key")
-    return df
-
-
-def remove_columns(df: DataFrame, cols: list[str] = []) -> DataFrame:
-    """Remove any unnecessary columns, e.g. columns without any non-null values
-
-    Args:
-        df (DataFrame): DataFrame to remove columns from
-        cols (list[str]): Column names to remove if present in the df
-
-    Returns:
-        DataFrame:
-    """
-    keep_cols = [c for c in df.columns if c not in cols]
-    df = df.select(keep_cols)
-
     return df
