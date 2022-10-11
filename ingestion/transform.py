@@ -4,21 +4,22 @@ from pyspark.sql.functions import regexp_extract, col, locate
 
 # Columns from the sample data set that contain only null values
 EMPTY_COLS = [
-    'appName',
-    'deviceEventClassId',
-    'deviceProduct',
-    'deviceVendor',
-    'deviceVersion',
-    'extension',
-    'messageId',
-    'name',
-    'processId',
-    'receivedDate',
-    'severity',
-    'structuredData',
-    'tag',
-    'version'
- ]
+    "appName",
+    "deviceEventClassId",
+    "deviceProduct",
+    "deviceVendor",
+    "deviceVersion",
+    "extension",
+    "messageId",
+    "name",
+    "processId",
+    "receivedDate",
+    "severity",
+    "structuredData",
+    "tag",
+    "version",
+]
+
 
 def remove_columns(df: DataFrame, cols: list[str] = EMPTY_COLS) -> DataFrame:
     """Remove any unnecessary columns, e.g. columns without any non-null values
@@ -26,7 +27,7 @@ def remove_columns(df: DataFrame, cols: list[str] = EMPTY_COLS) -> DataFrame:
     Args:
         df (DataFrame): DataFrame to remove columns from
         cols (list[str]): Columns to remove if present in the df,
-            default a prepared list of columns 
+            default a prepared list of columns
 
     Returns:
         DataFrame:
@@ -36,23 +37,24 @@ def remove_columns(df: DataFrame, cols: list[str] = EMPTY_COLS) -> DataFrame:
 
     return df
 
-def parse_message_field(df : DataFrame, msg_col : str = "message") -> DataFrame:
+
+def parse_message_field(df: DataFrame, msg_col: str = "message") -> DataFrame:
     """Parsing contents from the message field into separate columns
     and filter test messages
 
     Args:
-        df (DataFrame): 
+        df (DataFrame):
         msg_col (str, optional): Name of the message column. Defaults to "message".
 
     Returns:
         DataFrame: With message column parsed, filtered and removed
-    """ 
+    """
 
     extracing_regexes = {
-        "dhcp_lease_ip_addr" : r"DHCP_LEASE\": ([0-9\.]*) to.*",
-        "dhcp_lease_mac_addr" : r"DHCP_LEASE\": [0-9\.]* to ([0-9a-f:]*) .*",
-        "dhcp_lease_client_name" : r"client name: (.*),",
-        "dhcp_lease_opt82" : r"opt82: ([0-9a-f:]*)"
+        "dhcp_lease_ip_addr": r"DHCP_LEASE\": ([0-9\.]*) to.*",
+        "dhcp_lease_mac_addr": r"DHCP_LEASE\": [0-9\.]* to ([0-9a-f:]*) .*",
+        "dhcp_lease_client_name": r"client name: (.*),",
+        "dhcp_lease_opt82": r"opt82: ([0-9a-f:]*)",
     }
 
     for col_name, regex in extracing_regexes.items():
@@ -71,7 +73,7 @@ def parse_message_field(df : DataFrame, msg_col : str = "message") -> DataFrame:
     df = df.where(locate("test message", col(msg_col)) == 0)
 
     # We have parsed the interesting contents from that column
-    # Also the rawMessage column contains the message, so this will be kept 
+    # Also the rawMessage column contains the message, so this will be kept
     df = df.drop(msg_col)
 
     return df
