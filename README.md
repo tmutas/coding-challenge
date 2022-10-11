@@ -64,4 +64,10 @@ I made sure that empty or null values do not go in the creation of the dimension
 However, domain knowledge can help developing better suited strategies for handling bad data. There is open questions as to what counts as faulty value and whether it should be dropped or kept.
 
 #### Dimension keys 
-For the most part, I just use row number as a dimension identifies, but again depending on the expected data, there can be different and better strategies for creating surrogate keys. 
+For the most part, I just use row number as a dimension identifier, but again depending on the expected data, there can be different and better strategies for creating surrogate keys. 
+
+#### Code structure
+I tried to make the code in the pipeline to be adaptable for different choices of DBMSs. Therefore there is an abstract BaseQueries class that specifies which statement are to be run (and e.g. enables type checking and code completion)
+This class should then be implemented for a DBMS, in this case Spark/Hive. 
+The class can then also handle connection setup, etc.
+

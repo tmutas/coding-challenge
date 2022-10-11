@@ -6,11 +6,7 @@ from .queries import BaseQueries
 
 
 class SparkSQLQueries(BaseQueries):
-    """Implementation
-
-    Args:
-        Queries (_type_): _description_
-    """
+    """Implementation for Spark SQL in combination with Apache Hive"""
 
     def __init__(
         self,
@@ -18,6 +14,13 @@ class SparkSQLQueries(BaseQueries):
         warehouse_path: str,
         raw_data: DataFrame
     ):
+        """Constructor for the SparkSQLQueries instance
+
+        Args:
+            spark (SparkSession): A SparkSession to interact with
+            warehouse_path (str): Path to where the Hive data warehouse will save the parquet files
+            raw_data (DataFrame): Passing the (cleaned ) raw_data to be inserted to the raw database from which the dimension and fact tables will be created
+        """
         self.engine = spark.sql
         self.raw_data = raw_data
 
