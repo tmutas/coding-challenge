@@ -62,7 +62,6 @@ def flatten_structs(df: DataFrame) -> DataFrame:
     Returns:
         DataFrame:
     """
-    # Need to unpack the iterator f
     df = df.select([f"{column_name}.*" for column_name in df.columns])
 
     # There was one more struct with a single field to unpack in the metadata
