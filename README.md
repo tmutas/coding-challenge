@@ -48,3 +48,20 @@ I decided to do it explicitely on finding a "test message" string, but depending
 
 However, for an informed decision, more domain knowledge about the data generating system is required.
 For example, different types of messages might be expected. Then there could be additional fields extracted, with others being allowed to be null, or the data can be split by a TBD "message type", and modeled with separate dimensions for the different message types.
+
+## Data Loading
+Modeling the Data Warehouse dimensions always depends on the use case at hand. With this in mind, I had to model it with the limited knowledge I could get from the data sample only. In a real-life scenario, this would of course take into account knowledge about the source system and possible analysis use cases.
+
+#### Choosing dimensions
+To provide an example, I created dimensions for some of the columns. 
+There is better tools or libraries to manage this modeling, but I just wanted to keep simple by using plain SQL queries.
+Some dimensions can be shared across multiple columns, for example the IP addresses.
+
+I decided so skip modeling a separate dimension for some pure integer columns to keep the scope limited.
+
+#### Handling bad data
+I made sure that empty or null values do not go in the creation of the dimension, but instead should be mapped to the default dimension key.
+However, domain knowledge can help developing better suited strategies for handling bad data. There is open questions as to what counts as faulty value and whether it should be dropped or kept.
+
+#### Dimension keys 
+For the most part, I just use row number as a dimension identifies, but again depending on the expected data, there can be different and better strategies for creating surrogate keys. 

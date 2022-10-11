@@ -34,12 +34,12 @@ class SparkSQLQueries(BaseQueries):
     def create_dw_db(self):
         self.engine(f"CREATE DATABASE dw LOCATION '{self.dw_db_location}'")
 
+    def insert_raw_data(self):
+        self.raw_data.write.saveAsTable('raw.raw_data')
+
     def create_dim_host(self):
         self.engine("CREATE TABLE dw.dim_host (host_id INT, host STRING)")
         self.engine("INSERT INTO dw.dim_host VALUES (-1, '')")
-
-    def insert_raw_data(self):
-        self.raw_data.write.saveAsTable('raw.raw_data')
 
     def insert_dim_host(self):
         self.engine(
@@ -114,3 +114,97 @@ class SparkSQLQueries(BaseQueries):
             AND byte4 between 0 and 255
             """
         )
+
+    def create_dim_kafka(self):
+        self.engine(
+            """
+            CREATE TABLE dw.dim_kafka (kafka_id INT, partition INT, topic STRING)
+            """
+        )
+        self.engine("INSERT INTO dw.dim_kafka VALUES (-1, 0, '')")
+
+    def insert_dim_kafka(self):
+        self.engine(
+            """
+            WITH kafka as (
+                SELECT partition, topic 
+                FROM raw.raw_data
+                WHERE partition is not null AND topic is not null AND topic != ''
+                GROUP BY partition, topic
+            ) 
+            INSERT INTO dw.dim_kafka
+            SELECT 
+            row_number() OVER (order by partition) AS ip_id,
+            * 
+            from kafka
+            """
+        )
+
+    def create_dim_raw_msg(self):
+        self.engine("CREATE TABLE dw.dim_raw_msg (raw_msg_id INT, raw_msg STRING, type STRING)")
+        self.engine("INSERT INTO dw.dim_raw_msg VALUES (-1, '', '')")
+
+    def insert_dim_raw_msg(self):
+        self.engine(
+            """
+            WITH 
+            vals as (
+                SELECT rawMessage, type from raw.raw_data
+                WHERE rawMessage is not null 
+                AND rawMessage != ''
+                AND type is not null 
+                AND type != ''
+                GROUP BY rawMessage, type
+            ),
+            raw_msg_dim as (
+                SELECT 
+                    row_number() over (ORDER BY rawMessage) as raw_msg_id, 
+                    * FROM vals
+            )
+            INSERT INTO dw.dim_raw_msg SELECT * FROM raw_msg_dim
+            """
+        )
+
+    def create_dim_dhcp(self):
+        self.engine(
+            """
+            CREATE TABLE dw.dim_dhcp (
+                dhcp_id INT,
+                dhcp_lease_mac_addr STRING,
+                dhcp_lease_client_name STRING,
+                dhcp_lease_opt82 STRING
+            )
+            """
+            )
+        self.engine("INSERT INTO dw.dim_dhcp VALUES (-1, '', '', '')")
+
+    def insert_dim_dhcp(self):
+        self.engine(
+            """
+            WITH 
+            vals as (
+                SELECT                 
+                    dhcp_lease_mac_addr,
+                    dhcp_lease_client_name,
+                    dhcp_lease_opt82
+                from raw.raw_data
+                WHERE dhcp_lease_mac_addr is not null 
+                AND dhcp_lease_mac_addr != ''
+                AND dhcp_lease_client_name is not null 
+                AND dhcp_lease_client_name != ''
+                AND dhcp_lease_opt82 is not null 
+                AND dhcp_lease_opt82 != ''
+                GROUP BY 
+                    dhcp_lease_mac_addr,
+                    dhcp_lease_client_name,
+                    dhcp_lease_opt82
+            ),
+            dhcp_dim as (
+                SELECT 
+                    row_number() over (ORDER BY dhcp_lease_mac_addr) as dhcp_id, 
+                    * FROM vals
+            )
+            INSERT INTO dw.dim_dhcp SELECT * FROM dhcp_dim
+            """
+        )
+
