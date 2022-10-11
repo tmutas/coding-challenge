@@ -35,11 +35,12 @@ class SparkSQLQueries(BaseQueries):
         self.engine(f"CREATE DATABASE dw LOCATION '{self.dw_db_location}'")
 
     def create_dim_host(self):
-        self.engine(f"CREATE TABLE dw.dim_host (host_id INT, host STRING)")
+        self.engine("CREATE TABLE dw.dim_host (host_id INT, host STRING)")
+        self.engine("INSERT INTO dw.dim_host VALUES (-1, '')")
 
     def insert_raw_data(self):
         self.raw_data.write.saveAsTable('raw.raw_data')
-        
+
     def insert_dim_host(self):
         self.engine(
             """
@@ -62,7 +63,19 @@ class SparkSQLQueries(BaseQueries):
                 byte2 INT,
                 byte3 INT,
                 byte4 INT
-            ) 
+            )
+            """
+        )
+        self.engine(
+            """
+            INSERT INTO dw.dim_ip VALUES (
+                -1, 
+                "0.0.0.0",
+                0, 
+                0,
+                0,
+                0
+            )
             """
         )
 
