@@ -1,5 +1,7 @@
 # Project-specific
 data/**
+notebooks/*
+metastore_db/*
 
 # Other system-specific
 .vscode/

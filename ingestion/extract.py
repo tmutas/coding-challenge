@@ -6,7 +6,7 @@ from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.functions import schema_of_json, from_json, from_unixtime
 
 
-def load_raw_data(
+def read_raw_data(
     spark_session: SparkSession, file_path: Union[Path, str]
 ) -> DataFrame:
     """Load the raw (multline) CSV data into Spark DataFrame

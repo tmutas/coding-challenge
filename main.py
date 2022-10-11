@@ -12,7 +12,7 @@ from typing import Union
 from pyspark.sql import DataFrame, SparkSession
 
 from ingestion.extract import (
-    load_raw_data,
+    read_raw_data,
     parse_json_data,
     flatten_structs,
 )
@@ -21,6 +21,10 @@ from ingestion.transform import (
     remove_columns,
     parse_message_field,
 )
+
+from ingestion.spark_queries import SparkSQLQueries
+
+import ingestion.load as load
 
 logger = logging.getLogger()
 
@@ -35,7 +39,7 @@ def extract_raw_data(spark: SparkSession, path: Union[str, Path]) -> DataFrame:
     Returns:
         DataFrame: Raw data in columnar format
     """
-    df = load_raw_data(spark, path)
+    df = read_raw_data(spark, path)
     logger.info("Parsing JSON data")
     df = parse_json_data(df)
     logger.info("Flattening data")
@@ -62,15 +66,34 @@ def transform_data(df: DataFrame) -> DataFrame:
     return df
 
 
+def load_data(sparkqueries: SparkSQLQueries, create_dbs=True, create_dim_tables=True):
+    if create_dbs:
+        load.create_databases(sparkqueries)
+
+    if create_dim_tables:
+        load.create_dimension_tables(sparkqueries)
+    
+    load.insert_rawdata(sparkqueries)
+    load.insert_dimensions(sparkqueries)
+
+
 def run(args):
     logger.info("Creating SparkSession")
-    spark = SparkSession.builder.getOrCreate()
+    spark = SparkSession.builder.enableHiveSupport().getOrCreate()
 
     logger.info("Starting raw data processing")
     df = extract_raw_data(spark, args.input_data_path)
+
+    logger.info("Starting transformation")
     df = transform_data(df)
 
-    df.show(10)
+    logger.info("Creating SparkSQLQueries")
+    sparkqueries = SparkSQLQueries(spark, args.warehouse_path, df)
+
+    logger.info("Loading into data warehouse")
+    load_data(sparkqueries)
+
+    return spark
 
 
 if __name__ == "__main__":
@@ -83,7 +106,9 @@ if __name__ == "__main__":
     logger.info("Parsing input arguments")
 
     parser = ArgumentParser()
-    parser.add_argument("input_data_path", type=Path)
+    parser.add_argument("input_data_path", type=Path, help='Path to raw data')
+    parser.add_argument("warehouse_path", type=Path, help='Path to Spark DW')
+
     args = parser.parse_args()
 
     run(args)
