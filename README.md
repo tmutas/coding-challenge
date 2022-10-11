@@ -19,7 +19,7 @@ I use poetry as a dependency management tool for Python. In order to use it, you
 Note that you need to have at least a JDK installed. Spark does work locally without a Hadoop cluster
 
 #### Running it
-The pipeline is wrapped into a simple `main.py` script that runs the pipeline, and takes the file path as input.
+The pipeline is wrapped into a simple `main.py` script that runs the pipeline, and takes the file path as input, as well as where the Spark/Hive data warehouse shall be written to.
 For production purposes, there is obviously better choices to orchestrate the pipeline, which I didn't implement due to time constraints.
 For example, Apache Airflow could be used to run the provided functions as separate Operators. 
 

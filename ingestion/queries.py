@@ -50,3 +50,9 @@ class BaseQueries(ABC):
 
     def insert_dim_dhcp(self):
         pass
+
+    def create_fact_kafka_logs(self):
+        pass
+
+    def insert_fact_kafka_logs(self):
+        pass

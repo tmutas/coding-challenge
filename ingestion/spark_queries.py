@@ -211,3 +211,58 @@ class SparkSQLQueries(BaseQueries):
             """
         )
 
+    def create_fact_kafka_logs(self):
+        self.engine(
+            """
+            CREATE TABLE dw.fact_kafka_logs (
+                CreateTime bigint,
+                offset int,
+                kafka_id int,
+                facility int,
+                host_id int,
+                level int,
+                raw_msg_id int,
+                remote_ip_address_id int,
+                timestamp bigint,
+                dhcp_lease_ip_address_id int,
+                dhcp_id int
+            )
+
+            """
+        )
+    def insert_fact_kafka_logs(self):
+        self.engine(
+            """
+            INSERT INTO dw.fact_kafka_logs
+            SELECT
+                r.CreateTime,
+                r.offset,
+                k.kafka_id,
+                r.facility,
+                h.host_id,
+                r.level,
+                rw.raw_msg_id,
+                i1.ip_id as remote_ip_address_id,
+                timestamp,
+                i2.ip_id as dhcp_lease_ip_address_id,
+                d.dhcp_id
+            
+            FROM raw.raw_data r
+            LEFT JOIN dw.dim_host h
+            on h.host = r.host
+            LEFT JOIN dw.dim_ip i1
+            on i1.ip = r.remoteAddress
+            LEFT JOIN dw.dim_ip i2
+            on i2.ip = r.dhcp_lease_ip_addr
+            LEFT JOIN dw.dim_dhcp d
+            on d.dhcp_lease_mac_addr = d.dhcp_lease_mac_addr
+            and d.dhcp_lease_client_name = r.dhcp_lease_client_name
+            and d.dhcp_lease_opt82 = r.dhcp_lease_opt82
+            LEFT JOIN dw.dim_kafka k
+            on k.partition = r.partition
+            and k.topic = r.topic
+            LEFT JOIN dw.dim_raw_msg rw
+            on rw.raw_msg = r.rawMessage
+            and rw.type = r.type
+            """
+        )

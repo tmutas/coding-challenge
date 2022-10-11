@@ -72,9 +72,11 @@ def load_data(sparkqueries: SparkSQLQueries, create_dbs=True, create_dim_tables=
 
     if create_dim_tables:
         load.create_dimension_tables(sparkqueries)
-    
+
     load.insert_rawdata(sparkqueries)
     load.insert_dimensions(sparkqueries)
+    load.create_fact_table(sparkqueries)
+    load.insert_fact_table(sparkqueries)
 
 
 def run(args):
@@ -93,6 +95,7 @@ def run(args):
     logger.info("Loading into data warehouse")
     load_data(sparkqueries)
 
+    spark.sql('SELECT * from dw.fact_kafka_logs').show()
     return spark
 
 
@@ -106,8 +109,8 @@ if __name__ == "__main__":
     logger.info("Parsing input arguments")
 
     parser = ArgumentParser()
-    parser.add_argument("input_data_path", type=Path, help='Path to raw data')
-    parser.add_argument("warehouse_path", type=Path, help='Path to Spark DW')
+    parser.add_argument("input_data_path", type=Path, help="Path to raw data")
+    parser.add_argument("warehouse_path", type=Path, help="Path to Spark DW")
 
     args = parser.parse_args()
 
